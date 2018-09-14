@@ -1,9 +1,9 @@
+/* Equipment Balancing Project */
 
 #include <iterator>
 #include <iostream>
 #include <cstdlib>
 #include "CSVReader.h"
-#include "gurobi_c++.h"
 #include "MIPSolver.h"
 using namespace std;
 
