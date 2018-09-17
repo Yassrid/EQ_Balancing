@@ -16,15 +16,21 @@
 
 class eq_data {
 public:
+    string _datafolder;
     vector<Load> _Loads;
     vector<Facility> _Facilities;
     vector<Equipment> _Equipments;
     map<string,int> _EQ2Int;
-    vector<Imbalance> _Imbalance;
+    map<int,string> _Int2EQ;
+    map<string,vector<int>> _InboundArcs;
+    map<string,vector<int>> _OutboundArcs;
+    map<pair<string,string>, int> _InboundEQ;
+    map<pair<string,string>, int> _OutboundEQ;
     void computeImbalance();
+    void mapEQ2Int();
+    void mapFacilityEQ();
 private:
     
 
 };
-
 #endif /* eq_data_h */

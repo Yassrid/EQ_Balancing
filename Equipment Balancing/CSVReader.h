@@ -7,14 +7,16 @@
 class CSVReader {
 public:
     string _inputfolder;
+    string _district;
     CSVReader();
 	CSVReader(string inputFile);
+    CSVReader(string inputFile, string district);
     void readLoads(vector<Load> &loads);
     void readFacilities(vector<Facility> &facilties);
     void readEquipments(vector<Equipment> &equipments);
     void readEQData(eq_data &eq_data );
 private:
-    
+
 	/* secrets */
 };
 class CSVWriter {
@@ -42,4 +44,4 @@ private:
 };
 
 std::istream& operator>>(std::istream& str, CSVRow& data);
-
+string removeSpaces(string world);

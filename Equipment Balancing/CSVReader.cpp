@@ -1,5 +1,4 @@
 #include "CSVReader.h"
-#include "pch.h"
 #include <iterator>
 #include <iostream>
 #include <cstdlib>
@@ -8,12 +7,19 @@
 
 CSVReader::CSVReader(){
     _inputfolder="";
+    _district ="ALL";
 }
 CSVReader::CSVReader(string inputFile){
     _inputfolder=inputFile;
+    _district="ALL";
+}
+CSVReader::CSVReader(string inputFile, string district){
+    _inputfolder=inputFile;
+    _district = district;
 }
 void CSVReader::readEQData(eq_data &eqdata){
     cout << "|-Reading Data:\n";
+    eqdata._datafolder = this->_inputfolder;
     readLoads(eqdata._Loads);
     readFacilities(eqdata._Facilities);
     readEquipments(eqdata._Equipments);
@@ -38,8 +44,12 @@ void CSVReader::readLoads(vector<Load> &loads){
         iter++;
         if (iter == 1)
             continue;
-        
+        if(_district!="ALL")
+            if (_district!=row[12] && _district!=row[8])
+                continue;
         Load load;
+        if(iter==1144)
+            iter =iter;
         load.loadId = row[0];
         load.origin = row[5];
         load.destination = row[9];
@@ -49,6 +59,15 @@ void CSVReader::readLoads(vector<Load> &loads){
         //load.due_date = stoi(row[16]);
         load.volume = stod(row[2]);
         load.weight = stod(row[3]);
+        load.equipment=removeSpaces(row[4]);
+        if(_district!="ALL"){
+            if (_district!=row[8])
+                load.origin = "DummySender";
+            if (_district!=row[12])
+                load.destination = "DummyReceiver";
+        }
+        if(load.origin=="SEAIL")
+            load=load;
         Loads.push_back(load);
     }
     cout << Loads.size() << " loads found.\n";
@@ -75,6 +94,9 @@ void CSVReader::readFacilities(vector<Facility> &facilities){
         iter++;
         if (iter == 1)
             continue;
+        if(_district!="ALL")
+            if (_district!=row[3])
+                continue;
         // deleting the "\r" at the end
         string s=row[12];
         s.erase(s.end()-1);
@@ -98,6 +120,18 @@ void CSVReader::readFacilities(vector<Facility> &facilities){
         
         Facilities.push_back(facility);
     }
+    // Add the two dummy facilities
+    if(_district!="ALL"){
+        Facility dummySender;
+        dummySender.name = "dummySender";
+        dummySender.district = "-1";
+        Facility dummyReceiver;
+        dummyReceiver.name = "dummyReceiver";
+        dummyReceiver.district = "-1";
+        Facilities.push_back(dummySender);
+        Facilities.push_back(dummyReceiver);
+    }
+    
     cout << Facilities.size() << " facilities found.\n";
     facilities = Facilities;
 }
@@ -124,7 +158,7 @@ void CSVReader::readEquipments(vector<Equipment> &equipments){
         string s=row[10];
         s.erase(s.end()-1);
         Equipment equipment;
-        equipment.name = row[0];
+        equipment.name = removeSpaces(row[0]);
         equipment.category = s;
         equipment.capacity = stod(row[7]);
         equipment.weight = stod(row[8]);
@@ -164,5 +198,9 @@ std::istream& operator>>(std::istream& str, CSVRow& data)
     data.readNextRow(str);
     return str;
 }
-
+string removeSpaces(string str)
+{
+    str.erase(remove(str.begin(), str.end(), ' '), str.end());
+    return str;
+}
 

@@ -18,12 +18,15 @@
 
 class MIPSolver {
 public:
+    string _datafolder;
     GRBEnv* _env;
     GRBModel* _model;
     eq_data _eqData;
     MIPSolver();
     MIPSolver(eq_data $eqdata);
-    void createModel1();
+    void createModel1(int param_N1);
+    void solveModel();
+    void exportModel();
 };
 
 

@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <string>
-
+#include <stdio.h>
 
 using namespace std;
 struct Load
@@ -62,5 +62,6 @@ struct Imbalance{
     string facility;
     string category;
     
-    unsigned int deficit=0;
+    int outbound=0;
+    int inbound=0;
 };
