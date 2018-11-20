@@ -1,4 +1,5 @@
 #include <string>
+#include <set>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -8,15 +9,19 @@ class CSVReader {
 public:
     string _inputfolder;
     string _district;
+    string _region;
+    int _esm;
     CSVReader();
-	CSVReader(string inputFile);
-    CSVReader(string inputFile, string district);
+	//CSVReader(string inputFile, int esm=1);
+    CSVReader(string inputFile, int esm=1,string region="ALL", string district="ALL");
     void readLoads(vector<Load> &loads);
+    void readLoadChains(vector<Load> &loads);
     void readFacilities(vector<Facility> &facilties);
     void readEquipments(vector<Equipment> &equipments);
+    void readESM (map<pair<int,int>,int> &ESM);
+    void readESMEQ (vector<string> &EQNames);
     void readEQData(eq_data &eq_data );
 private:
-
 	/* secrets */
 };
 class CSVWriter {

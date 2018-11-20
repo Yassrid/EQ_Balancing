@@ -7,27 +7,33 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "EQData.h"
+#include <math.h>
+#include <iostream>
 
-void eq_data::computeImbalance(){
-    int NLoads = int(_Loads.size());
+eq_data::eq_data(){
+    
+}
+int eq_data::computeImbalance(){
+    //int NLoads = int(_Loads.size());
     int NFacilities = int(_Facilities.size());
     int NEquip = int(_Equipments.size());
-    Imbalance imb;
+    int total_imbalance = 0;
+    int residual_imbalance =0;
     for(int f=0;f<NFacilities;f++)
     {
+        residual_imbalance += fabs(_NInboundArcs[_Facilities[f].name]-_NOutboundArcs[_Facilities[f].name]);
         for(int e=0;e<NEquip;e++)
         {
-            _InboundEQ[make_pair(_Facilities[f].name,_Equipments[e].name)]=0;
-            _OutboundEQ[make_pair(_Facilities[f].name,_Equipments[e].name)]=0;
+            if(_Equipments[e].name=="BT")
+                continue;
+            total_imbalance += fabs(_InboundEQ[make_pair(_Facilities[f].name,_Equipments[e].name)]-_OutboundEQ[make_pair(_Facilities[f].name,_Equipments[e].name)]);
         }
     }
-    for(int i=0;i<NLoads;i++){
-        Load l =_Loads[i];
-        _InboundEQ[make_pair(l.destination,l.equipment)]+=1;
-        _OutboundEQ[make_pair(l.origin,l.equipment)]+=1;
-    }
-    return;
+    cout << " Initial imbalance :"  << total_imbalance << endl;
+    cout << " Residual imbalance :"  << residual_imbalance << endl;
+    return total_imbalance;
 }
 void eq_data::mapFacilityEQ(){
     int NLoads = int(_Loads.size());
@@ -37,6 +43,17 @@ void eq_data::mapFacilityEQ(){
     {
         for(int e=0;e<NEquip;e++)
         {
+            _InboundEQ_new[make_pair(_Facilities[f].name,_Equipments[e].name)]=0;
+            _OutboundEQ_new[make_pair(_Facilities[f].name,_Equipments[e].name)]=0;
+        }
+    }
+    
+    for(int f=0;f<NFacilities;f++)
+    {
+        _NInboundArcs[_Facilities[f].name] = 0;
+        _NOutboundArcs[_Facilities[f].name] = 0;
+        for(int e=0;e<NEquip;e++)
+        {
             _InboundEQ[make_pair(_Facilities[f].name,_Equipments[e].name)]=0;
             _OutboundEQ[make_pair(_Facilities[f].name,_Equipments[e].name)]=0;
         }
@@ -45,10 +62,9 @@ void eq_data::mapFacilityEQ(){
     
     for(int i=0;i<NLoads;i++){
         Load l =_Loads[i];
-        if(l.origin=="SEAIL"){
-            l=l;
-        }
 
+        _NInboundArcs[l.destination] += 1;
+        _NOutboundArcs[l.origin] += 1;
         _InboundArcs[l.destination].push_back(i);
         _OutboundArcs[l.origin].push_back(i);
         _InboundEQ[make_pair(l.destination,l.equipment)]+=1;
@@ -57,48 +73,52 @@ void eq_data::mapFacilityEQ(){
     return;
 }
 void eq_data::mapEQ2Int(){
-    // building a mapping from category type to integer
+    // building a mapping from category type to integer and vice versa
     map<string, int> EQ2Int;
-    EQ2Int["W"]=0;
-    EQ2Int["WW"]=1;
-    EQ2Int["WWW"]=2;
-    EQ2Int["WWS"]=3;
-    EQ2Int["L"]=4;
-    EQ2Int["H"]=5;
-    EQ2Int["MS"]=6;
-    EQ2Int["F"]=7;
-    EQ2Int["Z"]=8;
-    EQ2Int["ZZ"]=9;
-    EQ2Int["ZZS"]=10;
-    EQ2Int["TMB"]=11;
-    EQ2Int["TMF"]=12;
-    EQ2Int["ZZZ"]=13;
-    EQ2Int["RBL"]=14;
-    EQ2Int["E"]=15;
-    EQ2Int["N"]=16;
-    
-    _EQ2Int=EQ2Int;
-    
-    // building a mapping from integer to equipment type
     map<int, string> Int2EQ;
-    Int2EQ[0]="W";
-    Int2EQ[1]="WW";
-    Int2EQ[2]="WWW";
-    Int2EQ[3]="WWS";
-    Int2EQ[4]="L";
-    Int2EQ[5]="H";
-    Int2EQ[6]="MS";
-    Int2EQ[7]="F";
-    Int2EQ[8]="Z";
-    Int2EQ[9]="ZZ";
-    Int2EQ[10]="ZZS";
-    Int2EQ[11]="TMB";
-    Int2EQ[12]="TMF";
-    Int2EQ[13]="ZZZ";
-    Int2EQ[14]="RBL";
-    Int2EQ[15]="E";
-    Int2EQ[16]="N";
-    _Int2EQ = Int2EQ;
+    
+    for(int i=0; i<_EQNames.size();i++)
+    {
+        //EQ2Int[equipments[i]]=i;
+        //Int2EQ[i]=equipments[i];
+        EQ2Int[_EQNames[i]]=i;
+        Int2EQ[i]=_EQNames[i];
+    }
+    EQ2Int["BT"]=18;
+    Int2EQ[18]="BT";
     _EQ2Int=EQ2Int;
+    _Int2EQ = Int2EQ;
+
     return;
+}
+void eq_data::mapEQ2PupConv(){
+    map<int, double> pupConv;
+    for(int i=0;i<_Equipments.size();i++)
+    {
+        int id = _EQ2Int[_Equipments[i].name];
+        pupConv[id] = _Equipments[i].pup_conversion;
+    }
+    _PupConv = pupConv;
+
+    return;
+}
+void eq_data::mapEQ2Category(){
+    map<int, string> pupCat;
+    for(int i=0;i<_Equipments.size();i++)
+    {
+        int id = _EQ2Int[_Equipments[i].name];
+        pupCat[id] = _Equipments[i].category;
+    }
+    _PupCat = pupCat;
+    
+    return;
+}
+void eq_data::mapFac2XLRestriction(){
+    map<string,int> FacRes;
+    for(int i=0;i<_Facilities.size();i++)
+    {
+        Facility fac = _Facilities[i];
+        FacRes[fac.name] = fac.xlong_restricted;
+    }
+    _FacXLRes = FacRes;
 }

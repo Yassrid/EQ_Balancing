@@ -4,24 +4,29 @@
 
 #include <vector>
 #include <string>
-#include <stdio.h>
+
 
 using namespace std;
 struct Load
 {
 	string loadId;
 	string origin;
+    string origin_dis;
+    string origin_reg;
 	string destination;
-	string origin_date;
-	string due_date;
+	string origin_day;
+    string destination_dis;
+    string destination_reg;
+	string due_day;
 	char origin_sort;
 	char destination_sort;
 
-
+    int trailer_max_number;
 	double volume;
 	double weight;
     
 	string equipment;
+    string equipment_new;
 };
 
 struct Equipment
@@ -51,7 +56,7 @@ struct Facility
     string state;
 	string country;
     string location_type;
-
+    string operations_type;
 	double longitude;
 	double latitude;
 
@@ -62,6 +67,6 @@ struct Imbalance{
     string facility;
     string category;
     
-    int outbound=0;
     int inbound=0;
+    int outbound=0;
 };
